@@ -1,0 +1,285 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+:root {
+  /* Original Themeable Colors */
+  --background: #ffffff;
+  --foreground: #0f1211;
+
+  /* Themeable Colors - Restored to Original Vibe */
+  --ptr-background: 210 11% 7%;
+  /* #0f1211 */
+  --ptr-foreground: 160 14% 93%;
+  /* #e7eceb */
+
+  --muted: 240 2% 16%;
+  /* #27272a */
+  --muted-foreground: 160 14% 93% / 0.7;
+  /* rgba(231, 236, 235, 0.7) */
+  --muted-foreground-light: 160 14% 93% / 0.5;
+  /* rgba(231, 236, 235, 0.5) */
+  --muted-foreground-dark: 160 14% 93% / 0.6;
+  /* rgba(231, 236, 235, 0.6) */
+  --card: 220 17% 98% / 0.01;
+  --card-foreground: 160 14% 93%;
+  --popover: 210 11% 7%;
+  --popover-foreground: 160 14% 93%;
+  /* Primary Accent Colors */
+  --primary: oklch(0.19 0.055 162);
+  /* #103027 */
+  --primary-foreground: oklch(0.99 0 0);
+  --ptr-primary: 165 96% 71%;
+  /* #78fcd6 */
+  --ptr-primary-foreground: 160 8% 6%;
+  --ptr-primary-light: oklch(0.93 0.1 176.45);
+  /* #0d0f0e */
+  /* Secondary Accent Colors (for buttons, etc.) */
+  --secondary: oklch(0.76 0.11 167);
+  /* #5FCDA9 */
+  --secondary-foreground: 165 14% 8%;
+  /* #141a18 */
+  --accent: 240 2% 25%;
+  /* #3f3f42 */
+  --accent-foreground: 240 2% 96%;
+  /* #f4f4f5 */
+  --border: 240 100% 100% / 0.08;
+  /* rgba(255, 255, 255, 0.08) */
+  --border-light: 210 17% 6% / 0.1;
+  /* rgba(16,24,40,0.1) */
+  --border-dark: 210 17% 6% / 0.05;
+  /* rgba(16,24,40,0.05) */
+  --ring: 165 96% 71%;
+  --radius: 0.5rem;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-border: hsl(var(--border));
+  --color-ring: hsl(var(--ring));
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --font-inter: var(--font-inter), sans-serif;
+  --font-noto-sans: var(--font-noto-sans), sans-serif;
+  --font-header: var(--font-noto-sans), sans-serif;
+  --font-family-header: var(--font-noto-sans), sans-serif;
+  --font-spotify: var(--font-spotify-mix-wide), sans-serif;
+  --font-family-spotify: var(--font-spotify-mix-wide), sans-serif;
+}
+
+@layer components {
+  .container {
+    padding-left: 1rem;
+    /* px-4 */
+    padding-right: 1rem;
+    /* px-4 */
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-noto-sans), sans-serif;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-noto-sans), sans-serif;
+  }
+}
+
+@layer utilities {
+  .bg-sk-sea-shade {
+    background-color: oklch(0.265 0.057 262.1 / 1);
+  }
+
+  .bg-sk-gold {
+    background-color: #f9f3e9;
+  }
+
+  .border-sk-white-20 {
+    border-color: rgba(255, 255, 255, .2);
+  }
+}
+
+@layer components {
+
+  /* Shiny Button Styles */
+  @property --gradient-angle {
+    syntax: "<angle>";
+    initial-value: 0deg;
+    inherits: false;
+  }
+
+  @property --gradient-angle-offset {
+    syntax: "<angle>";
+    initial-value: 0deg;
+    inherits: false;
+  }
+
+  @property --gradient-percent {
+    syntax: "<percentage>";
+    initial-value: 5%;
+    inherits: false;
+  }
+
+  @property --gradient-shine {
+    syntax: "<color>";
+    initial-value: white;
+    inherits: false;
+  }
+
+  .shiny-cta {
+    --shiny-cta-bg: #103027;
+    --shiny-cta-bg-subtle: #103027;
+    /* Dark primary equivalent */
+    --shiny-cta-fg: #ffffff;
+    --shiny-cta-highlight: #78fcd6;
+    /* Matches --ptr-primary */
+    --shiny-cta-highlight-subtle: #5FCDA9;
+    /* Matches --secondary */
+    --animation: gradient-angle linear infinite;
+    --duration: 3s;
+    --shadow-size: 2px;
+    --transition: 800ms cubic-bezier(0.25, 1, 0.5, 1);
+
+    isolation: isolate;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    outline-offset: 4px;
+    padding: 1.25rem 2.5rem;
+    font-size: 1.125rem;
+    line-height: 1.2;
+    font-weight: 500;
+    border: 1px solid transparent;
+    border-radius: 360px;
+    color: var(--shiny-cta-fg);
+    background: linear-gradient(var(--shiny-cta-bg), var(--shiny-cta-bg)) padding-box,
+      conic-gradient(from calc(var(--gradient-angle) - var(--gradient-angle-offset)),
+        transparent,
+        var(--shiny-cta-highlight) var(--gradient-percent),
+        var(--gradient-shine) calc(var(--gradient-percent) * 2),
+        var(--shiny-cta-highlight) calc(var(--gradient-percent) * 3),
+        transparent calc(var(--gradient-percent) * 4)) border-box;
+    box-shadow: inset 0 0 0 1px var(--shiny-cta-bg-subtle);
+    transition: var(--transition);
+    transition-property: --gradient-angle-offset, --gradient-percent, --gradient-shine;
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  .shiny-cta::before,
+  .shiny-cta::after,
+  .shiny-cta span::before {
+    content: "";
+    pointer-events: none;
+    position: absolute;
+    inset-inline-start: 50%;
+    inset-block-start: 50%;
+    translate: -50% -50%;
+    z-index: -1;
+  }
+
+  .shiny-cta:active {
+    translate: 0 1px;
+  }
+
+  /* Dots pattern */
+  .shiny-cta::before {
+    --size: calc(100% - var(--shadow-size) * 3);
+    --position: 2px;
+    --space: calc(var(--position) * 2);
+    width: var(--size);
+    height: var(--size);
+    background: radial-gradient(circle at var(--position) var(--position),
+        white calc(var(--position) / 4),
+        transparent 0) padding-box;
+    background-size: var(--space) var(--space);
+    background-repeat: space;
+    mask-image: conic-gradient(from calc(var(--gradient-angle) + 45deg),
+        black,
+        transparent 10% 90%,
+        black);
+    border-radius: inherit;
+    opacity: 0.4;
+    z-index: -1;
+  }
+
+  /* Inner shimmer */
+  .shiny-cta::after {
+    --animation: shimmer linear infinite;
+    width: 100%;
+    aspect-ratio: 1;
+    background: linear-gradient(-50deg,
+        transparent,
+        var(--shiny-cta-highlight),
+        transparent);
+    mask-image: radial-gradient(circle at bottom, transparent 40%, black);
+    opacity: 0.6;
+  }
+
+  .shiny-cta span {
+    position: relative;
+    z-index: 1;
+  }
+
+  .shiny-cta span::before {
+    border-radius: inherit;
+  }
+
+  /* Animate */
+  .shiny-cta,
+  .shiny-cta::before,
+  .shiny-cta::after {
+    animation: var(--animation) var(--duration),
+      var(--animation) calc(var(--duration) / 0.4) reverse paused;
+    animation-composition: add;
+  }
+
+  .shiny-cta:is(:hover, :focus-visible) {
+    --gradient-percent: 20%;
+    --gradient-angle-offset: 95deg;
+    --gradient-shine: var(--shiny-cta-highlight-subtle);
+  }
+
+  .shiny-cta:is(:hover, :focus-visible),
+  .shiny-cta:is(:hover, :focus-visible)::before,
+  .shiny-cta:is(:hover, :focus-visible)::after {
+    animation-play-state: running;
+  }
+
+  @keyframes gradient-angle {
+    to {
+      --gradient-angle: 360deg;
+    }
+  }
+
+  @keyframes shimmer {
+    to {
+      rotate: 360deg;
+    }
+  }
+}

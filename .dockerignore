@@ -1,0 +1,13 @@
+.git
+.gitignore
+.env*
+.next
+node_modules
+public/uploads
+*.tsbuildinfo
+next-env.d.ts
+.claude/
+CLAUDE.md
+README.md
+Dockerfile
+.dockerignore

@@ -1,0 +1,181 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+
+model Admin {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  full_name     String
+  phone         String?
+  password_hash String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("admins")
+}
+
+model Category {
+  id        String    @id @default(uuid())
+  name      String    @unique
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  articles  Article[]
+
+  @@map("categories")
+}
+
+enum ArticleStatus {
+  DRAFT
+  PUBLISHED
+}
+
+enum CareerStatus {
+  DRAFT
+  PUBLISHED
+}
+
+enum EmploymentType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  INTERNSHIP
+}
+
+model Article {
+  id                String        @id @default(uuid())
+  title             String        @unique
+  slug              String        @unique
+  short_description String?
+  content           String?       @db.Text
+  image             String?
+  gallery_images    String[]      // Array of gallery image URLs
+  category_id       String
+  published_date    DateTime?
+  status            ArticleStatus @default(DRAFT)
+  meta_title        String?
+  meta_description  String?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  category Category @relation(fields: [category_id], references: [id], onDelete: Cascade)
+
+  @@index([slug])
+  @@map("articles")
+}
+
+model Career {
+  id                String         @id @default(uuid())
+  title             String         @unique
+  slug              String         @unique
+  department        String
+  location          String
+  employment_type   EmploymentType @default(FULL_TIME)
+  short_description String?
+  content           String?        @db.Text
+  requirements      String?        @db.Text
+  benefits          String?        @db.Text
+  salary_range      String?
+  published_date    DateTime?
+  status            CareerStatus   @default(DRAFT)
+  meta_title        String?
+  meta_description  String?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  @@index([slug])
+  @@map("careers")
+}
+
+model Inquiry {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  company   String?
+  message   String   @db.Text
+  ip        String?
+  createdAt DateTime @default(now())
+
+  @@map("inquiries")
+}
+
+model Classification {
+  id          String     @id @default(uuid()) @db.Uuid
+  name        String     @unique
+  description String?
+  image       String?
+  orderNo     Int        @default(0)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  showcases   Showcase[]
+
+  @@map("classifications")
+}
+
+model Showcase {
+  id                String         @id @default(uuid()) @db.Uuid
+  slug              String         @unique
+  name              String         @unique
+  classification_id String         @db.Uuid
+  description       String?
+  tagline           String
+  objective         String?
+  solution          String?
+  campaign_dates    String?
+  market            String?
+  formats           String?
+  source            String?
+  metrics_text      String?
+  orderNo           Int            @default(0)
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  classification Classification @relation(fields: [classification_id], references: [id], onDelete: Cascade)
+  samples        Sample[]
+  metrics        Metric[]
+
+  @@map("showcases")
+}
+
+model Sample {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String
+  description String?
+  showcase_id String   @db.Uuid
+  image       String
+  audio       String?
+  video_link  String?
+  orderNo     Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  showcase Showcase @relation(fields: [showcase_id], references: [id], onDelete: Cascade)
+
+  @@map("samples")
+}
+
+model Metric {
+  id                String   @id @default(uuid()) @db.Uuid
+  showcase_id       String   @db.Uuid
+  name              String
+  short_description String?
+  caption           String?
+  prefix            String?
+  value             Float
+  suffix            String?
+  hide_name         Boolean  @default(false)
+  orderNo           Int      @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  showcase Showcase @relation(fields: [showcase_id], references: [id], onDelete: Cascade)
+
+  @@map("metrics")
+}
