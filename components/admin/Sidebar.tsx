@@ -4,13 +4,9 @@ import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard,
   Users,
-  FileText,
   FolderOpen,
   Briefcase,
-  Inbox,
   X,
-  Layers,
-  Presentation
 } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
@@ -25,8 +21,6 @@ export default function Sidebar() {
   const navigation = [
     { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
     { name: 'Admins', href: '/admin/admins', icon: Users },
-    { name: 'Classifications', href: '/admin/classifications', icon: Layers },
-    { name: 'Showcases', href: '/admin/showcases', icon: Presentation },
     { name: 'Ad Products', href: '/admin/ad-products', icon: FolderOpen },
     { name: 'Features', href: '/admin/features', icon: Briefcase },
   ]

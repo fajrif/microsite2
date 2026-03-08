@@ -6,6 +6,6 @@ export default function robots(): MetadataRoute.Robots {
       userAgent: "*",
       allow: "/",
     },
-    sitemap: "https://micrositecreativeone.com/sitemap.xml",
+    sitemap: "https://micrositedemotwo.com/sitemap.xml",
   };
 }

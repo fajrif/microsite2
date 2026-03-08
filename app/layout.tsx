@@ -39,15 +39,15 @@ const spotifyMixWide = localFont({
 export const metadata: Metadata = {
     title: "Spotify 广告",
     description: "将Spotify的创意转化为成功案例：互动式演示",
-    metadataBase: new URL("https://micrositecreativeone.com"),
+    metadataBase: new URL("https://micrositedemotwo.com"),
     openGraph: {
         title: "Spotify 广告",
         description: "将Spotify的创意转化为成功案例：互动式演示",
-        url: "https://micrositecreativeone.com",
+        url: "https://micrositedemotwo.com",
         siteName: "Spotify 广告",
         images: [
             {
-                url: "https://micrositecreativeone.com/images/og-image.png",
+                url: "https://micrositedemotwo.com/images/og-image.png",
                 width: 1200,
                 height: 261,
                 alt: "Spotify Advertising",
@@ -61,7 +61,7 @@ export const metadata: Metadata = {
         card: "summary_large_image",
         title: "Spotify 广告",
         description: "将Spotify的创意转化为成功案例：互动式演示",
-        images: ["https://micrositecreativeone.com/images/og-image.png"],
+        images: ["https://micrositedemotwo.com/images/og-image.png"],
     },
     icons: {
         icon: [
