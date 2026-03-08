@@ -27,6 +27,8 @@ export default function Sidebar() {
     { name: 'Admins', href: '/admin/admins', icon: Users },
     { name: 'Classifications', href: '/admin/classifications', icon: Layers },
     { name: 'Showcases', href: '/admin/showcases', icon: Presentation },
+    { name: 'Ad Products', href: '/admin/ad-products', icon: FolderOpen },
+    { name: 'Features', href: '/admin/features', icon: Briefcase },
   ]
 
   return (

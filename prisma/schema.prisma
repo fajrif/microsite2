@@ -179,3 +179,37 @@ model Metric {
 
   @@map("metrics")
 }
+
+model AdProduct {
+  id          String    @id @default(uuid()) @db.Uuid
+  orderNo     Int       @default(0)
+  name        String    @unique
+  slug        String    @unique
+  image       String
+  description String?   @db.Text
+  tagline     String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  features    Feature[]
+
+  @@index([slug])
+  @@map("ad_products")
+}
+
+model Feature {
+  id            String    @id @default(uuid()) @db.Uuid
+  orderNo       Int       @default(0)
+  name          String
+  image         String
+  video_link    String?
+  audio_link    String?
+  ad_product_id String    @db.Uuid
+  caption       String?
+  description   String?   @db.Text
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  ad_product AdProduct @relation(fields: [ad_product_id], references: [id], onDelete: Cascade)
+
+  @@map("features")
+}
