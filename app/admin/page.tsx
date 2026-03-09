@@ -13,23 +13,23 @@ export default async function AdminDashboard() {
     }
 
     // Get statistics
-    const [showcaseCount, sampleCount] = await Promise.all([
-        prisma.showcase.count(),
-        prisma.sample.count(),
+    const [adProductCount, featuresCount] = await Promise.all([
+        prisma.adProduct.count(),
+        prisma.feature.count(),
     ])
 
     const dashboardStat = [
         {
             key: 1,
-            title: "Total Showcases",
-            value: showcaseCount,
+            title: "Total AdProduct",
+            value: adProductCount,
             icon: Layers,
             color: "text-blue-600",
         },
         {
             key: 2,
-            title: "Total Samples",
-            value: sampleCount,
+            title: "Total Features",
+            value: featuresCount,
             icon: Music,
             color: "text-green-600",
         },
