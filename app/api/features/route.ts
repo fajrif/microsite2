@@ -3,19 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { featureSchema } from '@/lib/validations/ad-product'
-
-async function uploadFileLocal(file: File): Promise<string> {
-    const bytes = await file.arrayBuffer()
-    const buffer = Buffer.from(bytes)
-    const fileName = `${Date.now()}-${file.name}`
-    const fs = await import('fs/promises')
-    const path = await import('path')
-
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads')
-    await fs.mkdir(uploadDir, { recursive: true })
-    await fs.writeFile(path.join(uploadDir, fileName), buffer)
-    return `/uploads/${fileName}`
-}
+import { uploadFile } from '@/lib/storage'
 
 // GET /api/features
 export async function GET(request: Request) {
@@ -85,8 +73,6 @@ export async function POST(request: Request) {
             ad_product_id: formData.get('ad_product_id') as string,
             caption: (formData.get('caption') as string) || undefined,
             description: (formData.get('description') as string) || undefined,
-            video_link: (formData.get('video_link') as string) || undefined,
-            audio_link: (formData.get('audio_link') as string) || undefined,
             orderNo: formData.get('orderNo') ? parseInt(formData.get('orderNo') as string) || 0 : 0,
         }
 
@@ -113,13 +99,29 @@ export async function POST(request: Request) {
             )
         }
 
-        const imageUrl = await uploadFileLocal(imageFile)
+        const imageUrl = await uploadFile(imageFile)
+
+        // Handle audio upload
+        let audioUrl: string | undefined
+        const audioFile = formData.get('audio') as File | null
+        if (audioFile && audioFile.size > 0) {
+            audioUrl = await uploadFile(audioFile)
+        }
+
+        // Handle video upload
+        let videoUrl: string | undefined
+        const videoFile = formData.get('video') as File | null
+        if (videoFile && videoFile.size > 0) {
+            videoUrl = await uploadFile(videoFile)
+        }
 
         const feature = await prisma.feature.create({
             data: {
                 ...validatedData,
                 ad_product_id: featureData.ad_product_id,
                 image: imageUrl,
+                audio_link: audioUrl,
+                video_link: videoUrl,
             },
             include: {
                 ad_product: true,

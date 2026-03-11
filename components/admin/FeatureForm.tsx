@@ -14,6 +14,7 @@ import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import TiptapLink from '@tiptap/extension-link'
 import TiptapImage from '@tiptap/extension-image'
+import { Trash2 } from 'lucide-react'
 
 interface FeatureFormProps {
     initialData?: any
@@ -29,6 +30,16 @@ export function FeatureForm({ initialData, adProducts }: FeatureFormProps) {
     const [adProductId, setAdProductId] = useState(initialData?.ad_product_id || '')
     const isEdit = !!initialData
 
+    // Audio state
+    const [audioFile, setAudioFile] = useState<File | null>(null)
+    const [audioPreview, setAudioPreview] = useState<string | null>(initialData?.audio_link || null)
+    const [audioDeleted, setAudioDeleted] = useState(false)
+
+    // Video state
+    const [videoFile, setVideoFile] = useState<File | null>(null)
+    const [videoPreview, setVideoPreview] = useState<string | null>(initialData?.video_link || null)
+    const [videoDeleted, setVideoDeleted] = useState(false)
+
     const {
         register,
         handleSubmit,
@@ -40,8 +51,6 @@ export function FeatureForm({ initialData, adProducts }: FeatureFormProps) {
             name: initialData?.name || '',
             caption: initialData?.caption || '',
             description: initialData?.description || '',
-            video_link: initialData?.video_link || '',
-            audio_link: initialData?.audio_link || '',
             orderNo: initialData?.orderNo ?? 0,
         },
     })
@@ -74,6 +83,40 @@ export function FeatureForm({ initialData, adProducts }: FeatureFormProps) {
         }
     }
 
+    const handleAudioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (file) {
+            setAudioFile(file)
+            setAudioDeleted(false)
+            setAudioPreview(file.name)
+        }
+    }
+
+    const handleDeleteAudio = () => {
+        setAudioDeleted(true)
+        setAudioFile(null)
+        setAudioPreview(null)
+        const input = document.getElementById('audio') as HTMLInputElement
+        if (input) input.value = ''
+    }
+
+    const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (file) {
+            setVideoFile(file)
+            setVideoDeleted(false)
+            setVideoPreview(file.name)
+        }
+    }
+
+    const handleDeleteVideo = () => {
+        setVideoDeleted(true)
+        setVideoFile(null)
+        setVideoPreview(null)
+        const input = document.getElementById('video') as HTMLInputElement
+        if (input) input.value = ''
+    }
+
     const onSubmit = async (data: FeatureFormData) => {
         setIsSubmitting(true)
         setError('')
@@ -93,16 +136,30 @@ export function FeatureForm({ initialData, adProducts }: FeatureFormProps) {
 
             const formData = new FormData()
 
-            Object.entries(data).forEach(([key, value]) => {
-                if (value !== undefined && value !== null) {
-                    formData.append(key, value.toString())
-                }
-            })
+            // Only append text fields (not video_link/audio_link which are now file-based)
+            formData.append('name', data.name)
+            if (data.caption) formData.append('caption', data.caption)
+            if (data.description) formData.append('description', data.description)
+            formData.append('orderNo', (data.orderNo ?? 0).toString())
 
             formData.append('ad_product_id', adProductId)
 
             if (imageFile) {
                 formData.append('image', imageFile)
+            }
+
+            if (audioFile) {
+                formData.append('audio', audioFile)
+            }
+            if (audioDeleted) {
+                formData.append('remove_audio', 'true')
+            }
+
+            if (videoFile) {
+                formData.append('video', videoFile)
+            }
+            if (videoDeleted) {
+                formData.append('remove_video', 'true')
             }
 
             const url = isEdit ? `/api/features/${initialData.id}` : '/api/features'
@@ -226,6 +283,7 @@ export function FeatureForm({ initialData, adProducts }: FeatureFormProps) {
                 </div>
             </div>
 
+            {/* Image Upload */}
             <div className="space-y-2">
                 <Label htmlFor="image">{isEdit ? 'Replace Image' : 'Image *'}</Label>
                 <Input
@@ -240,26 +298,76 @@ export function FeatureForm({ initialData, adProducts }: FeatureFormProps) {
                 )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                    <Label htmlFor="video_link">Video Link</Label>
-                    <Input
-                        id="video_link"
-                        {...register('video_link')}
-                        disabled={isSubmitting}
-                        placeholder="/public/uploads/videos/sample.mp4"
-                    />
-                </div>
+            {/* Audio Upload */}
+            <div className="space-y-2">
+                <Label htmlFor="audio">Audio File</Label>
+                <Input
+                    id="audio"
+                    type="file"
+                    accept="audio/*"
+                    onChange={handleAudioChange}
+                    disabled={isSubmitting}
+                />
+                {audioPreview && !audioFile && !audioDeleted && (
+                    <div className="flex items-center gap-2">
+                        <p className="text-xs text-gray-500 truncate flex-1">
+                            Current: {audioPreview}
+                        </p>
+                        <Button
+                            type="button"
+                            variant="destructive"
+                            size="sm"
+                            onClick={handleDeleteAudio}
+                        >
+                            <Trash2 className="h-4 w-4 mr-1" />
+                            Delete
+                        </Button>
+                    </div>
+                )}
+                {audioDeleted && (
+                    <p className="text-xs text-red-500">Audio will be deleted on save</p>
+                )}
+                {audioFile && (
+                    <p className="text-xs text-green-600 truncate">
+                        New: {audioFile.name}
+                    </p>
+                )}
+            </div>
 
-                <div className="space-y-2">
-                    <Label htmlFor="audio_link">Audio Link</Label>
-                    <Input
-                        id="audio_link"
-                        {...register('audio_link')}
-                        disabled={isSubmitting}
-                        placeholder="/public/uploads/audios/sample.wav"
-                    />
-                </div>
+            {/* Video Upload */}
+            <div className="space-y-2">
+                <Label htmlFor="video">Video File</Label>
+                <Input
+                    id="video"
+                    type="file"
+                    accept="video/*"
+                    onChange={handleVideoChange}
+                    disabled={isSubmitting}
+                />
+                {videoPreview && !videoFile && !videoDeleted && (
+                    <div className="flex items-center gap-2">
+                        <p className="text-xs text-gray-500 truncate flex-1">
+                            Current: {videoPreview}
+                        </p>
+                        <Button
+                            type="button"
+                            variant="destructive"
+                            size="sm"
+                            onClick={handleDeleteVideo}
+                        >
+                            <Trash2 className="h-4 w-4 mr-1" />
+                            Delete
+                        </Button>
+                    </div>
+                )}
+                {videoDeleted && (
+                    <p className="text-xs text-red-500">Video will be deleted on save</p>
+                )}
+                {videoFile && (
+                    <p className="text-xs text-green-600 truncate">
+                        New: {videoFile.name}
+                    </p>
+                )}
             </div>
 
             <div className="flex items-center gap-4 pt-4">

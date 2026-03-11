@@ -3,19 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { featureSchema } from '@/lib/validations/ad-product'
-
-async function uploadFileLocal(file: File): Promise<string> {
-    const bytes = await file.arrayBuffer()
-    const buffer = Buffer.from(bytes)
-    const fileName = `${Date.now()}-${file.name}`
-    const fs = await import('fs/promises')
-    const path = await import('path')
-
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads')
-    await fs.mkdir(uploadDir, { recursive: true })
-    await fs.writeFile(path.join(uploadDir, fileName), buffer)
-    return `/uploads/${fileName}`
-}
+import { uploadFile, deleteFile } from '@/lib/storage'
 
 // GET /api/features/[id]
 export async function GET(
@@ -78,8 +66,6 @@ export async function PUT(
             ad_product_id: formData.get('ad_product_id') as string,
             caption: (formData.get('caption') as string) || undefined,
             description: (formData.get('description') as string) || undefined,
-            video_link: (formData.get('video_link') as string) || undefined,
-            audio_link: (formData.get('audio_link') as string) || undefined,
             orderNo: formData.get('orderNo') ? parseInt(formData.get('orderNo') as string) || 0 : 0,
         }
 
@@ -98,10 +84,42 @@ export async function PUT(
         }
 
         // Handle image upload (optional on update)
+        // Note: image is required field, so no removal - only replacement
         let imageUpdate: { image?: string } = {}
         const imageFile = formData.get('image') as File | null
         if (imageFile && imageFile.size > 0) {
-            imageUpdate.image = await uploadFileLocal(imageFile)
+            await deleteFile(current.image)
+            imageUpdate.image = await uploadFile(imageFile)
+        }
+
+        // Handle audio removal/upload
+        const removeAudio = formData.get('remove_audio') === 'true'
+        let audioUpdate: { audio_link?: string | null } = {}
+
+        if (removeAudio) {
+            await deleteFile(current.audio_link)
+            audioUpdate.audio_link = null
+        } else {
+            const audioFile = formData.get('audio') as File | null
+            if (audioFile && audioFile.size > 0) {
+                await deleteFile(current.audio_link)
+                audioUpdate.audio_link = await uploadFile(audioFile)
+            }
+        }
+
+        // Handle video removal/upload
+        const removeVideo = formData.get('remove_video') === 'true'
+        let videoUpdate: { video_link?: string | null } = {}
+
+        if (removeVideo) {
+            await deleteFile(current.video_link)
+            videoUpdate.video_link = null
+        } else {
+            const videoFile = formData.get('video') as File | null
+            if (videoFile && videoFile.size > 0) {
+                await deleteFile(current.video_link)
+                videoUpdate.video_link = await uploadFile(videoFile)
+            }
         }
 
         const feature = await prisma.feature.update({
@@ -110,6 +128,8 @@ export async function PUT(
                 ...validatedData,
                 ad_product_id: featureData.ad_product_id,
                 ...imageUpdate,
+                ...audioUpdate,
+                ...videoUpdate,
             },
             include: {
                 ad_product: true,
@@ -138,6 +158,19 @@ export async function DELETE(
         if (!session) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
         }
+
+        const feature = await prisma.feature.findUnique({
+            where: { id: params.id },
+        })
+
+        if (!feature) {
+            return NextResponse.json({ error: 'Feature not found' }, { status: 404 })
+        }
+
+        // Clean up all files
+        await deleteFile(feature.image)
+        await deleteFile(feature.audio_link)
+        await deleteFile(feature.video_link)
 
         await prisma.feature.delete({
             where: { id: params.id },

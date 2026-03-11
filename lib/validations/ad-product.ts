@@ -13,8 +13,6 @@ export const featureSchema = z.object({
     name: z.string().min(1, 'Feature name is required'),
     caption: z.string().optional(),
     description: z.string().optional(),
-    video_link: z.string().optional(),
-    audio_link: z.string().optional(),
     orderNo: z.coerce.number().int().optional().default(0),
 })
 

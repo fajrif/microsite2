@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react'
 import Image from 'next/image'
-import { Play, Pause, SkipBack, SkipForward } from 'lucide-react'
+import { Play, Pause, SkipBack, SkipForward, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { AdProductSidebar } from '@/components/AdProductSidebar'
 import { AnimatedDiv } from "@/components/ui/animated-div"
@@ -40,12 +40,16 @@ interface AdProductShowClientProps {
 
 function FeaturePlayer({ feature }: { feature: Feature }) {
     const [isPlaying, setIsPlaying] = useState(false)
+    const [isBuffering, setIsBuffering] = useState(false)
     const [progress, setProgress] = useState(0)
     const videoRef = useRef<HTMLVideoElement>(null)
     const audioRef = useRef<HTMLAudioElement>(null)
 
     const hasVideo = !!feature.video_link
     const hasAudio = !hasVideo && !!feature.audio_link
+
+    const handleWaiting = () => setIsBuffering(true)
+    const handleCanPlay = () => setIsBuffering(false)
 
     const togglePlay = () => {
         if (hasVideo && videoRef.current) {
@@ -74,6 +78,7 @@ function FeaturePlayer({ feature }: { feature: Feature }) {
 
     const handleEnded = () => {
         setIsPlaying(false)
+        setIsBuffering(false)
         setProgress(0)
     }
 
@@ -87,6 +92,9 @@ function FeaturePlayer({ feature }: { feature: Feature }) {
                         src={feature.video_link!}
                         onTimeUpdate={handleTimeUpdate}
                         onEnded={handleEnded}
+                        onWaiting={handleWaiting}
+                        onPlaying={handleCanPlay}
+                        onCanPlay={handleCanPlay}
                         playsInline
                         className="absolute inset-0 w-full h-full object-cover"
                     />
@@ -107,9 +115,15 @@ function FeaturePlayer({ feature }: { feature: Feature }) {
                     >
                         <div className={cn(
                             'w-14 h-14 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center transition-all duration-300',
-                            isPlaying ? 'opacity-0 group-hover:opacity-100' : 'opacity-100'
+                            isBuffering && isPlaying
+                                ? 'opacity-100'
+                                : isPlaying
+                                    ? 'opacity-0 group-hover:opacity-100'
+                                    : 'opacity-100'
                         )}>
-                            {isPlaying ? (
+                            {isBuffering && isPlaying ? (
+                                <Loader2 className="h-6 w-6 text-white animate-spin" />
+                            ) : isPlaying ? (
                                 <Pause className="h-6 w-6 text-white" />
                             ) : (
                                 <Play className="h-6 w-6 text-white ml-0.5" />
@@ -137,11 +151,17 @@ function FeaturePlayer({ feature }: { feature: Feature }) {
                         src={feature.audio_link!}
                         onTimeUpdate={handleTimeUpdate}
                         onEnded={handleEnded}
+                        onWaiting={handleWaiting}
+                        onPlaying={handleCanPlay}
+                        onCanPlay={handleCanPlay}
                     />
 
                     <div className="shrink-0 px-4 pb-4 pt-3">
                         {/* Progress bar */}
-                        <div className="w-full h-[3px] bg-white/20 rounded-full mb-4">
+                        <div className={cn(
+                            "w-full h-[3px] bg-white/20 rounded-full mb-4",
+                            isBuffering && isPlaying && "animate-pulse"
+                        )}>
                             <div
                                 className="h-full rounded-full transition-all duration-100"
                                 style={{ width: `${progress}%`, backgroundColor: 'hsl(var(--ptr-primary))' }}
@@ -157,7 +177,9 @@ function FeaturePlayer({ feature }: { feature: Feature }) {
                                 onClick={togglePlay}
                                 className="w-10 h-10 rounded-full bg-white flex items-center justify-center hover:scale-105 transition-transform shadow-md"
                             >
-                                {isPlaying ? (
+                                {isBuffering && isPlaying ? (
+                                    <Loader2 className="h-4 w-4 text-black animate-spin" />
+                                ) : isPlaying ? (
                                     <Pause className="h-4 w-4 text-black" />
                                 ) : (
                                     <Play className="h-4 w-4 text-black ml-0.5" />

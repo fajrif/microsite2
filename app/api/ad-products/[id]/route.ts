@@ -4,19 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { adProductSchema } from '@/lib/validations/ad-product'
 import { generateSlug } from '@/lib/slug'
-
-async function uploadFileLocal(file: File): Promise<string> {
-    const bytes = await file.arrayBuffer()
-    const buffer = Buffer.from(bytes)
-    const fileName = `${Date.now()}-${file.name}`
-    const fs = await import('fs/promises')
-    const path = await import('path')
-
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads')
-    await fs.mkdir(uploadDir, { recursive: true })
-    await fs.writeFile(path.join(uploadDir, fileName), buffer)
-    return `/uploads/${fileName}`
-}
+import { uploadFile, deleteFile } from '@/lib/storage'
 
 // GET /api/ad-products/[id]
 export async function GET(
@@ -115,10 +103,12 @@ export async function PUT(
         }
 
         // Handle image upload (optional on update)
+        // Note: image is required field, so no removal - only replacement
         let imageUpdate: { image?: string } = {}
         const imageFile = formData.get('image') as File | null
         if (imageFile && imageFile.size > 0) {
-            imageUpdate.image = await uploadFileLocal(imageFile)
+            await deleteFile(current.image)
+            imageUpdate.image = await uploadFile(imageFile)
         }
 
         const adProduct = await prisma.adProduct.update({
@@ -151,6 +141,26 @@ export async function DELETE(
         if (!session) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
         }
+
+        // Fetch with features to clean up all files
+        const adProduct = await prisma.adProduct.findUnique({
+            where: { id: params.id },
+            include: { features: true },
+        })
+
+        if (!adProduct) {
+            return NextResponse.json({ error: 'Ad product not found' }, { status: 404 })
+        }
+
+        // Delete all feature files
+        for (const feature of adProduct.features) {
+            await deleteFile(feature.image)
+            await deleteFile(feature.audio_link)
+            await deleteFile(feature.video_link)
+        }
+
+        // Delete ad product image
+        await deleteFile(adProduct.image)
 
         await prisma.adProduct.delete({
             where: { id: params.id },

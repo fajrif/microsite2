@@ -4,19 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { adProductSchema } from '@/lib/validations/ad-product'
 import { generateSlug } from '@/lib/slug'
-
-async function uploadFileLocal(file: File): Promise<string> {
-    const bytes = await file.arrayBuffer()
-    const buffer = Buffer.from(bytes)
-    const fileName = `${Date.now()}-${file.name}`
-    const fs = await import('fs/promises')
-    const path = await import('path')
-
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads')
-    await fs.mkdir(uploadDir, { recursive: true })
-    await fs.writeFile(path.join(uploadDir, fileName), buffer)
-    return `/uploads/${fileName}`
-}
+import { uploadFile } from '@/lib/storage'
 
 // GET /api/ad-products
 export async function GET(request: Request) {
@@ -131,7 +119,7 @@ export async function POST(request: Request) {
             )
         }
 
-        const imageUrl = await uploadFileLocal(imageFile)
+        const imageUrl = await uploadFile(imageFile)
 
         const adProduct = await prisma.adProduct.create({
             data: {
