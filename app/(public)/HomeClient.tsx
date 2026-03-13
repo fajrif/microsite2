@@ -48,20 +48,20 @@ export function HomeClient({ adProducts }: HomeClientProps) {
 
                     {/* Headline */}
                     <AnimatedDiv id="home-headline" delay={0.05}>
-                        <h1 className="drop-shadow-sm font-display text-3xl md:text-5xl lg:text-6xl font-bold leading-none text-[hsl(var(--ptr-primary))] text-center">
-                            Explore Our Ad Products:
+                        <h1 className="drop-shadow-sm font-display text-3xl md:text-5xl lg:text-6xl font-bold leading-none text-[hsl(var(--ptr-primary))] text-center mb-2">
+                            探索我们的广告产品：
                         </h1>
                     </AnimatedDiv>
                     <AnimatedDiv id="home-subtitle" delay={0.1}>
-                        <p className="mt-2 text-2xl md:text-4xl lg:text-5xl font-light text-[hsl(var(--ptr-primary))] text-center">
-                            An interactive walk-through.
-                        </p>
+                        <h1 className="drop-shadow-sm font-display text-3xl md:text-5xl lg:text-6xl font-bold leading-none text-[hsl(var(--ptr-primary))] text-center">
+                            您的 Spotify 营销指南
+                        </h1>
                     </AnimatedDiv>
 
                     {/* Subtitle */}
                     <AnimatedDiv id="home-description" delay={0.2}>
-                        <p className="mt-6 text-base md:text-lg text-white max-w-3xl mx-auto leading-relaxed text-center">
-                            Grab your headphones & let&apos;s get started.
+                        <p className="mt-6 text-xl text-white max-w-3xl mx-auto leading-relaxed text-center">
+                            戴上耳机，即刻启程
                         </p>
                     </AnimatedDiv>
 
@@ -72,25 +72,28 @@ export function HomeClient({ adProducts }: HomeClientProps) {
                                 href={adProducts.length > 0 ? `/ad-products/${adProducts[0].slug}` : '#'}
                                 className="text-white rounded-4xl text-base py-3"
                             >
-                                Let&apos;s start!
+                                马上开始！
                             </ShinyButton>
                         </div>
                     </AnimatedDiv>
 
                     {/* iPhone Mockups */}
                     <AnimatedDiv id="home-phones" delay={0.5}>
-                        <div className="mt-0 md:mt-16 flex justify-center items-end gap-[-20px]">
-                            <div className="flex items-end justify-center relative" style={{ height: 420 }}>
+                        <div className="mt-0 md:mt-10 flex justify-center items-end overflow-hidden md:overflow-visible w-full">
+                            <div className="flex items-center justify-center relative w-full h-[340px] md:h-[560px] lg:h-[640px]">
                                 {adProducts.map((product, index) => {
                                     const total = adProducts.length
                                     const centerIdx = Math.floor(total / 2)
                                     const offset = index - centerIdx
 
-                                    // Stagger: center phone is tallest/highest
-                                    const translateY = Math.abs(offset) * 24
+                                    // Center phone is larger, side phones are scaled down
+                                    const isCenter = offset === 0
+                                    const scale = isCenter ? 1 : 0.82
                                     const zIndex = total - Math.abs(offset)
-                                    const rotate = offset * 4
-                                    const marginLeft = index === 0 ? 0 : -28
+                                    // Left phone overlaps center from left, right phone overlaps from right
+                                    const isLeft = offset < 0
+                                    const isRight = offset > 0
+                                    const overlapPx = 40
 
                                     return (
                                         <button
@@ -99,20 +102,18 @@ export function HomeClient({ adProducts }: HomeClientProps) {
                                             className="group relative shrink-0 cursor-pointer transition-transform duration-300 hover:scale-105"
                                             style={{
                                                 zIndex,
-                                                transform: `translateY(${translateY}px) rotate(${rotate}deg)`,
-                                                marginLeft: index > 0 ? marginLeft : 0,
+                                                transform: `scale(${scale})`,
+                                                marginRight: isLeft ? -overlapPx : 0,
+                                                marginLeft: isRight ? -overlapPx : 0,
                                             }}
                                         >
                                             {/* iPhone frame */}
                                             <div className={cn(
-                                                'w-[160px] h-[320px] md:w-[200px] md:h-[400px] rounded-[28px] md:rounded-[32px] overflow-hidden',
+                                                'w-[130px] h-[260px] sm:w-[150px] sm:h-[300px] md:w-[260px] md:h-[520px] rounded-[24px] sm:rounded-[28px] md:rounded-[36px] overflow-hidden',
                                                 'border-[3px] border-gray-700 bg-black shadow-2xl',
                                                 'transition-all duration-300',
                                                 'group-hover:border-[hsl(var(--ptr-primary))] group-hover:shadow-[0_0_30px_rgba(30,215,96,0.3)]'
                                             )}>
-                                                {/* Notch */}
-                                                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-20 md:w-24 h-5 md:h-6 bg-black rounded-b-2xl z-10" />
-
                                                 {/* Screen content */}
                                                 <div className="relative w-full h-full">
                                                     <Image
@@ -122,16 +123,18 @@ export function HomeClient({ adProducts }: HomeClientProps) {
                                                         className="object-cover"
                                                         unoptimized
                                                     />
+                                                    {/* Product name overlay — visible on hover */}
+                                                    <div className={cn(
+                                                        'absolute inset-0 flex items-center justify-center px-3',
+                                                        'bg-black/50',
+                                                        'opacity-0 group-hover:opacity-100 transition-opacity duration-300'
+                                                    )}>
+                                                        <p className="text-sm md:text-base font-spotify font-[900] text-center text-[hsl(var(--ptr-primary))] leading-tight drop-shadow-md">
+                                                            {product.name}
+                                                        </p>
+                                                    </div>
                                                 </div>
                                             </div>
-
-                                            {/* Product name below phone */}
-                                            <p className={cn(
-                                                'mt-3 text-sm md:text-base font-spotify font-[900] text-center transition-colors duration-300',
-                                                'text-white group-hover:text-[hsl(var(--ptr-primary))]'
-                                            )}>
-                                                {product.name}
-                                            </p>
                                         </button>
                                     )
                                 })}

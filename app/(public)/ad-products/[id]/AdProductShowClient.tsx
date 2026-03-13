@@ -268,7 +268,7 @@ export function AdProductShowClient({ adProduct, allAdProducts }: AdProductShowC
                                                 {/* Caption + Description */}
                                                 <div className="flex-1 min-w-0">
                                                     <h3 className="text-xl md:text-2xl font-bold text-[hsl(var(--ptr-primary))] font-display mb-4">
-                                                        {feature.name}
+                                                        {feature.caption}
                                                     </h3>
                                                     {feature.description && (
                                                         <div
