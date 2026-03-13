@@ -4,6 +4,7 @@
 
 import path from 'path'
 import fs from 'fs/promises'
+import os from 'os'
 
 let ossClient: any = null
 
@@ -17,7 +18,8 @@ function getOssClient() {
     accessKeyId: process.env.OSS_ACCESS_KEY_ID!,
     accessKeySecret: process.env.OSS_ACCESS_KEY_SECRET!,
     bucket: process.env.OSS_BUCKET!,
-    timeout: 300_000, // 5 minutes
+    secure: true, // Use HTTPS to avoid socket hang ups
+    timeout: 600_000, // 10 minutes
   })
   return ossClient
 }
@@ -41,7 +43,24 @@ export async function uploadFile(file: File, filename?: string): Promise<string>
   const oss = getOssClient()
   if (oss) {
     const objectKey = `uploads/${Date.now()}-${name}`
-    await oss.put(objectKey, buffer)
+    // Use multipart upload for files > 10MB.
+    // Single oss.put() can timeout on larger files since it's one HTTP request.
+    // Multipart splits into smaller parts that each complete within timeout.
+    if (buffer.length > 10 * 1024 * 1024) {
+      const tmpFile = path.join(os.tmpdir(), `upload-${Date.now()}-${name}`)
+      try {
+        await fs.writeFile(tmpFile, buffer)
+        await oss.multipartUpload(objectKey, tmpFile, {
+          parallel: 2,
+          partSize: 10 * 1024 * 1024, // 10MB parts
+          timeout: 600_000, // 10 minutes for multipart
+        })
+      } finally {
+        await fs.unlink(tmpFile).catch(() => {})
+      }
+    } else {
+      await oss.put(objectKey, buffer)
+    }
     return getOssUrl(objectKey)
   }
 

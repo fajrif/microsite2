@@ -4,7 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { adProductSchema } from '@/lib/validations/ad-product'
 import { generateSlug } from '@/lib/slug'
-import { uploadFile, deleteFile } from '@/lib/storage'
+import { deleteFile } from '@/lib/storage'
 
 // GET /api/ad-products/[id]
 export async function GET(
@@ -102,13 +102,12 @@ export async function PUT(
             slugUpdate = { slug }
         }
 
-        // Handle image upload (optional on update)
-        // Note: image is required field, so no removal - only replacement
+        // Handle image URL (pre-uploaded by client, optional on update)
         let imageUpdate: { image?: string } = {}
-        const imageFile = formData.get('image') as File | null
-        if (imageFile && imageFile.size > 0) {
+        const imageUrl = formData.get('image_url') as string | null
+        if (imageUrl) {
             await deleteFile(current.image)
-            imageUpdate.image = await uploadFile(imageFile)
+            imageUpdate.image = imageUrl
         }
 
         const adProduct = await prisma.adProduct.update({

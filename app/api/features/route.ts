@@ -3,7 +3,6 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { featureSchema } from '@/lib/validations/ad-product'
-import { uploadFile } from '@/lib/storage'
 
 // GET /api/features
 export async function GET(request: Request) {
@@ -90,30 +89,17 @@ export async function POST(request: Request) {
             )
         }
 
-        // Handle image upload
-        const imageFile = formData.get('image') as File | null
-        if (!imageFile || imageFile.size === 0) {
+        // Handle URLs (pre-uploaded by client)
+        const imageUrl = formData.get('image_url') as string | null
+        if (!imageUrl) {
             return NextResponse.json(
                 { error: 'Image is required' },
                 { status: 400 }
             )
         }
 
-        const imageUrl = await uploadFile(imageFile)
-
-        // Handle audio upload
-        let audioUrl: string | undefined
-        const audioFile = formData.get('audio') as File | null
-        if (audioFile && audioFile.size > 0) {
-            audioUrl = await uploadFile(audioFile)
-        }
-
-        // Handle video upload
-        let videoUrl: string | undefined
-        const videoFile = formData.get('video') as File | null
-        if (videoFile && videoFile.size > 0) {
-            videoUrl = await uploadFile(videoFile)
-        }
+        const audioUrl = (formData.get('audio_url') as string) || undefined
+        const videoUrl = (formData.get('video_url') as string) || undefined
 
         const feature = await prisma.feature.create({
             data: {

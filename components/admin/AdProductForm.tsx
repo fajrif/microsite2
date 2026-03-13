@@ -10,6 +10,9 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { FileOrUrlInput } from '@/components/ui/file-or-url-input'
+import { UploadProgressList } from '@/components/ui/upload-progress'
+import { useFileUpload } from '@/lib/hooks/use-file-upload'
 import { toast } from 'sonner'
 
 interface AdProductFormProps {
@@ -22,7 +25,10 @@ export function AdProductForm({ initialData }: AdProductFormProps) {
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [imagePreview, setImagePreview] = useState<string | null>(initialData?.image || null)
     const [imageFile, setImageFile] = useState<File | null>(null)
+    const [imageDirectUrl, setImageDirectUrl] = useState('')
     const isEdit = !!initialData
+
+    const upload = useFileUpload()
 
     const {
         register,
@@ -38,15 +44,16 @@ export function AdProductForm({ initialData }: AdProductFormProps) {
         },
     })
 
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0]
+    const handleImageFileChange = (file: File | null) => {
+        setImageFile(file)
         if (file) {
-            setImageFile(file)
             const reader = new FileReader()
             reader.onloadend = () => {
                 setImagePreview(reader.result as string)
             }
             reader.readAsDataURL(file)
+        } else {
+            setImagePreview(initialData?.image || null)
         }
     }
 
@@ -55,10 +62,27 @@ export function AdProductForm({ initialData }: AdProductFormProps) {
         setError('')
 
         try {
-            if (!isEdit && !imageFile) {
+            if (!isEdit && !imageFile && !imageDirectUrl) {
                 setError('Image is required')
                 setIsSubmitting(false)
                 return
+            }
+
+            // Pre-upload files first, then send URLs to API
+            let resolvedImageUrl = imageDirectUrl
+
+            if (imageFile) {
+                const filesToUpload = [imageFile]
+                const results = await upload.uploadFiles(filesToUpload)
+                const url = results.get(`upload-${Array.from(results.keys())[0].split('-').slice(1).join('-')}`)
+                // Get by iterating - uploadFiles returns map keyed by item id
+                const firstUrl = Array.from(results.values())[0]
+                if (!firstUrl) {
+                    setError('Image upload failed')
+                    setIsSubmitting(false)
+                    return
+                }
+                resolvedImageUrl = firstUrl
             }
 
             const formData = new FormData()
@@ -69,8 +93,8 @@ export function AdProductForm({ initialData }: AdProductFormProps) {
                 }
             })
 
-            if (imageFile) {
-                formData.append('image', imageFile)
+            if (resolvedImageUrl) {
+                formData.append('image_url', resolvedImageUrl)
             }
 
             const url = isEdit ? `/api/ad-products/${initialData.id}` : '/api/ad-products'
@@ -96,6 +120,8 @@ export function AdProductForm({ initialData }: AdProductFormProps) {
         }
     }
 
+    const disabled = isSubmitting || upload.isUploading
+
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             {error && (
@@ -104,50 +130,58 @@ export function AdProductForm({ initialData }: AdProductFormProps) {
                 </div>
             )}
 
+            <UploadProgressList
+                items={upload.items}
+                overallProgress={upload.overallProgress}
+                onCancel={upload.abort}
+            />
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                     <Label htmlFor="name">Name *</Label>
-                    <Input id="name" {...register('name')} disabled={isSubmitting} />
+                    <Input id="name" {...register('name')} disabled={disabled} />
                     {errors.name && <p className="text-sm text-red-600">{errors.name.message}</p>}
                 </div>
 
                 <div className="space-y-2">
                     <Label htmlFor="orderNo">Order No</Label>
-                    <Input id="orderNo" type="number" {...register('orderNo', { valueAsNumber: true })} disabled={isSubmitting} placeholder="0" />
+                    <Input id="orderNo" type="number" {...register('orderNo', { valueAsNumber: true })} disabled={disabled} placeholder="0" />
                 </div>
             </div>
 
             <div className="space-y-2">
                 <Label htmlFor="tagline">Tagline *</Label>
-                <Input id="tagline" {...register('tagline')} disabled={isSubmitting} />
+                <Input id="tagline" {...register('tagline')} disabled={disabled} />
                 {errors.tagline && <p className="text-sm text-red-600">{errors.tagline.message}</p>}
             </div>
 
             <div className="space-y-2">
                 <Label htmlFor="description">Description</Label>
-                <Textarea id="description" {...register('description')} disabled={isSubmitting} rows={4} />
+                <Textarea id="description" {...register('description')} disabled={disabled} rows={4} />
             </div>
 
-            <div className="space-y-2">
-                <Label htmlFor="image">{isEdit ? 'Replace Image' : 'Image *'}</Label>
-                <Input
-                    id="image"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    disabled={isSubmitting}
-                />
-                {imagePreview && (
+            <FileOrUrlInput
+                id="image"
+                label={isEdit ? 'Replace Image' : 'Image *'}
+                accept="image/*"
+                disabled={disabled}
+                currentUrl={initialData?.image}
+                onFileChange={handleImageFileChange}
+                onUrlChange={setImageDirectUrl}
+                directUrl={imageDirectUrl}
+                preview={imagePreview && imageFile ? (
                     <img src={imagePreview} alt="Preview" className="mt-2 max-h-40 rounded" />
-                )}
-            </div>
+                ) : imagePreview && !imageFile ? (
+                    <img src={imagePreview} alt="Current" className="mt-2 max-h-40 rounded" />
+                ) : undefined}
+            />
 
             <div className="flex items-center gap-4 pt-4">
-                <Button type="submit" disabled={isSubmitting}>
-                    {isSubmitting ? 'Saving...' : isEdit ? 'Update Ad Product' : 'Create Ad Product'}
+                <Button type="submit" disabled={disabled}>
+                    {upload.isUploading ? 'Uploading...' : isSubmitting ? 'Saving...' : isEdit ? 'Update Ad Product' : 'Create Ad Product'}
                 </Button>
                 <Link href="/admin/ad-products">
-                    <Button type="button" variant="outline" disabled={isSubmitting}>
+                    <Button type="button" variant="outline" disabled={disabled}>
                         Cancel
                     </Button>
                 </Link>

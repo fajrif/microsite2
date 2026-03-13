@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { featureSchema } from '@/lib/validations/ad-product'
-import { uploadFile, deleteFile } from '@/lib/storage'
+import { deleteFile } from '@/lib/storage'
 
 // GET /api/features/[id]
 export async function GET(
@@ -83,13 +83,12 @@ export async function PUT(
             )
         }
 
-        // Handle image upload (optional on update)
-        // Note: image is required field, so no removal - only replacement
+        // Handle image URL (pre-uploaded by client, optional on update)
         let imageUpdate: { image?: string } = {}
-        const imageFile = formData.get('image') as File | null
-        if (imageFile && imageFile.size > 0) {
+        const imageUrl = formData.get('image_url') as string | null
+        if (imageUrl) {
             await deleteFile(current.image)
-            imageUpdate.image = await uploadFile(imageFile)
+            imageUpdate.image = imageUrl
         }
 
         // Handle audio removal/upload
@@ -100,10 +99,10 @@ export async function PUT(
             await deleteFile(current.audio_link)
             audioUpdate.audio_link = null
         } else {
-            const audioFile = formData.get('audio') as File | null
-            if (audioFile && audioFile.size > 0) {
+            const audioUrl = formData.get('audio_url') as string | null
+            if (audioUrl) {
                 await deleteFile(current.audio_link)
-                audioUpdate.audio_link = await uploadFile(audioFile)
+                audioUpdate.audio_link = audioUrl
             }
         }
 
@@ -115,10 +114,10 @@ export async function PUT(
             await deleteFile(current.video_link)
             videoUpdate.video_link = null
         } else {
-            const videoFile = formData.get('video') as File | null
-            if (videoFile && videoFile.size > 0) {
+            const videoUrl = formData.get('video_url') as string | null
+            if (videoUrl) {
                 await deleteFile(current.video_link)
-                videoUpdate.video_link = await uploadFile(videoFile)
+                videoUpdate.video_link = videoUrl
             }
         }
 

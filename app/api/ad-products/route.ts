@@ -4,7 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { adProductSchema } from '@/lib/validations/ad-product'
 import { generateSlug } from '@/lib/slug'
-import { uploadFile } from '@/lib/storage'
+
 
 // GET /api/ad-products
 export async function GET(request: Request) {
@@ -110,16 +110,14 @@ export async function POST(request: Request) {
             slugSuffix++
         }
 
-        // Handle image upload
-        const imageFile = formData.get('image') as File | null
-        if (!imageFile || imageFile.size === 0) {
+        // Handle image URL (pre-uploaded by client)
+        const imageUrl = formData.get('image_url') as string | null
+        if (!imageUrl) {
             return NextResponse.json(
                 { error: 'Image is required' },
                 { status: 400 }
             )
         }
-
-        const imageUrl = await uploadFile(imageFile)
 
         const adProduct = await prisma.adProduct.create({
             data: {
