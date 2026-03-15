@@ -1,7 +1,9 @@
 'use client'
 
+import { useState, useEffect, useCallback } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
+import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { AnimatedDiv } from "@/components/ui/animated-div"
 import { ShinyButton } from '@/components/ui/shiny-button'
@@ -25,6 +27,46 @@ interface HomeClientProps {
 
 export function HomeClient({ adProducts }: HomeClientProps) {
     const router = useRouter()
+    const [rotationIndex, setRotationIndex] = useState(0)
+    const [isHovered, setIsHovered] = useState(false)
+    const [xOffset, setXOffset] = useState(160)
+
+    const total = adProducts.length
+    const centerIdx = Math.floor(total / 2) // slot 1 for 3 items
+
+    useEffect(() => {
+        const updateOffset = () => {
+            const w = window.innerWidth
+            if (w < 640) setXOffset(100)       // mobile: phones tight together
+            else if (w < 768) setXOffset(120)   // sm
+            else setXOffset(160)                // md+
+        }
+        updateOffset()
+        window.addEventListener('resize', updateOffset)
+        return () => window.removeEventListener('resize', updateOffset)
+    }, [])
+
+    useEffect(() => {
+        if (isHovered || total === 0) return
+        const interval = setInterval(() => {
+            setRotationIndex(prev => prev + 1)
+        }, 3000)
+        return () => clearInterval(interval)
+    }, [isHovered, total])
+
+    const getSlotStyle = useCallback((index: number) => {
+        const slot = (index + rotationIndex) % total
+        const isCenter = slot === centerIdx
+        const isLeft = slot < centerIdx
+
+        if (isCenter) {
+            return { x: 0, scale: 1, zIndex: 3 }
+        } else if (isLeft) {
+            return { x: -xOffset, scale: 0.82, zIndex: 2 }
+        } else {
+            return { x: xOffset, scale: 0.82, zIndex: 2 }
+        }
+    }, [rotationIndex, total, centerIdx, xOffset])
 
     return (
         <>
@@ -77,35 +119,26 @@ export function HomeClient({ adProducts }: HomeClientProps) {
                         </div>
                     </AnimatedDiv>
 
-                    {/* iPhone Mockups */}
+                    {/* iPhone Mockups — Circular Carousel */}
                     <AnimatedDiv id="home-phones" delay={0.5}>
-                        <div className="mt-0 md:mt-10 flex justify-center items-end overflow-hidden md:overflow-visible w-full">
-                            <div className="flex items-center justify-center relative w-full h-[340px] md:h-[560px] lg:h-[640px]">
+                        <div
+                            className="mt-0 md:mt-10 flex justify-center items-end overflow-hidden md:overflow-visible w-full"
+                        >
+                            <div className="relative w-full h-[340px] md:h-[560px] lg:h-[640px] flex items-center justify-center">
                                 {adProducts.map((product, index) => {
-                                    const total = adProducts.length
-                                    const centerIdx = Math.floor(total / 2)
-                                    const offset = index - centerIdx
-
-                                    // Center phone is larger, side phones are scaled down
-                                    const isCenter = offset === 0
-                                    const scale = isCenter ? 1 : 0.82
-                                    const zIndex = total - Math.abs(offset)
-                                    // Left phone overlaps center from left, right phone overlaps from right
-                                    const isLeft = offset < 0
-                                    const isRight = offset > 0
-                                    const overlapPx = 40
+                                    const { x, scale, zIndex } = getSlotStyle(index)
 
                                     return (
-                                        <button
+                                        <motion.button
                                             key={product.id}
                                             onClick={() => router.push(`/ad-products/${product.slug}`)}
-                                            className="group relative shrink-0 cursor-pointer transition-transform duration-300 hover:scale-105"
-                                            style={{
-                                                zIndex,
-                                                transform: `scale(${scale})`,
-                                                marginRight: isLeft ? -overlapPx : 0,
-                                                marginLeft: isRight ? -overlapPx : 0,
-                                            }}
+                                            className="group absolute cursor-pointer"
+                                            animate={{ x, scale, zIndex }}
+                                            transition={{ type: 'spring', stiffness: 200, damping: 25 }}
+                                            style={{ zIndex }}
+                                            whileHover={{ scale: scale * 1.05 }}
+                                            onMouseEnter={() => setIsHovered(true)}
+                                            onMouseLeave={() => setIsHovered(false)}
                                         >
                                             {/* iPhone frame */}
                                             <div className={cn(
@@ -135,7 +168,7 @@ export function HomeClient({ adProducts }: HomeClientProps) {
                                                     </div>
                                                 </div>
                                             </div>
-                                        </button>
+                                        </motion.button>
                                     )
                                 })}
                             </div>
