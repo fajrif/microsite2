@@ -234,7 +234,7 @@ export function AdProductShowClient({ adProduct, allAdProducts }: AdProductShowC
 
                         {/* Right: Main content */}
                         <div className="flex-1 min-w-0">
-                            <div className="max-w-3xl">
+                            <div className="max-w-2xl">
                                 {/* Tagline */}
                                 <AnimatedDiv id="ad-product-tagline" delay={0}>
                                     <h1 className="drop-shadow-sm font-display text-3xl md:text-4xl lg:text-6xl font-bold leading-[1] text-[hsl(var(--ptr-primary))]">
