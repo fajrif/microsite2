@@ -117,6 +117,7 @@ model AdProduct {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   features    Feature[]
+  surveys     Survey[]
 
   @@index([slug])
   @@map("ad_products")
@@ -138,4 +139,18 @@ model Feature {
   ad_product AdProduct @relation(fields: [ad_product_id], references: [id], onDelete: Cascade)
 
   @@map("features")
+}
+
+model Survey {
+  id            String   @id @default(uuid()) @db.Uuid
+  ad_product_id String   @db.Uuid
+  rating        Int
+  ip            String
+  createdAt     DateTime @default(now())
+
+  ad_product AdProduct @relation(fields: [ad_product_id], references: [id], onDelete: Cascade)
+
+  @@index([ad_product_id])
+  @@index([ip, ad_product_id])
+  @@map("surveys")
 }

@@ -6,6 +6,8 @@ import { Play, Pause, SkipBack, SkipForward, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { AdProductSidebar } from '@/components/AdProductSidebar'
 import { AnimatedDiv } from "@/components/ui/animated-div"
+import { SurveyDialog } from '@/components/SurveyDialog'
+import { MessageSquare } from 'lucide-react'
 
 interface Feature {
     id: string
@@ -210,6 +212,8 @@ function FeaturePlayer({ feature }: { feature: Feature }) {
 }
 
 export function AdProductShowClient({ adProduct, allAdProducts }: AdProductShowClientProps) {
+    const [surveyOpen, setSurveyOpen] = useState(false)
+
     return (
         <>
             <div className="absolute top-0 z-[0] h-screen w-screen pointer-events-none bg-[radial-gradient(ellipse_20%_80%_at_50%_-20%,rgba(16,48,39,0.8),rgba(255,255,255,0))]" />
@@ -220,17 +224,20 @@ export function AdProductShowClient({ adProduct, allAdProducts }: AdProductShowC
                 <div className="container mx-auto px-4 py-8 md:py-16">
                     <div className="flex gap-10 lg:gap-16">
                         {/* Left: Tree navigation (desktop only) */}
-                        <AdProductSidebar
-                            adProducts={allAdProducts}
-                            currentAdProductSlug={adProduct.slug}
-                        />
+                        <div className="hidden md:block self-start sticky top-24 flex-shrink-0">
+                            <AdProductSidebar
+                                adProducts={allAdProducts}
+                                currentAdProductSlug={adProduct.slug}
+                                onShareThoughts={() => setSurveyOpen(true)}
+                            />
+                        </div>
 
                         {/* Right: Main content */}
                         <div className="flex-1 min-w-0">
                             <div className="max-w-3xl">
                                 {/* Tagline */}
                                 <AnimatedDiv id="ad-product-tagline" delay={0}>
-                                    <h1 className="drop-shadow-sm font-display text-3xl md:text-4xl lg:text-6xl font-bold leading-none text-[hsl(var(--ptr-primary))]">
+                                    <h1 className="drop-shadow-sm font-display text-3xl md:text-4xl lg:text-6xl font-bold leading-[1] text-[hsl(var(--ptr-primary))]">
                                         {adProduct.tagline}
                                     </h1>
                                 </AnimatedDiv>
@@ -267,9 +274,12 @@ export function AdProductShowClient({ adProduct, allAdProducts }: AdProductShowC
 
                                                 {/* Caption + Description */}
                                                 <div className="flex-1 min-w-0">
-                                                    <h3 className="text-xl md:text-2xl font-bold text-[hsl(var(--ptr-primary))] font-display mb-4">
-                                                        {feature.caption}
-                                                    </h3>
+                                                    {feature.caption && (
+                                                        <div
+                                                            className="text-xl md:text-2xl font-bold text-[hsl(var(--ptr-primary))] font-display mb-4 prose prose-invert max-w-none"
+                                                            dangerouslySetInnerHTML={{ __html: feature.caption }}
+                                                        />
+                                                    )}
                                                     {feature.description && (
                                                         <div
                                                             className="text-sm md:text-base font-light text-white leading-relaxed prose prose-invert max-w-none prose-p:text-white prose-p:font-light"
@@ -286,6 +296,21 @@ export function AdProductShowClient({ adProduct, allAdProducts }: AdProductShowC
                     </div>
                 </div>
             </section>
+
+            {/* Mobile floating button */}
+            <button
+                onClick={() => setSurveyOpen(true)}
+                className="fixed bottom-6 right-6 md:hidden z-40 flex items-center gap-2 bg-[#1ED760] text-gray-900 px-4 py-3 rounded-full shadow-lg font-semibold text-sm hover:bg-[#1abc54] transition-colors"
+            >
+                <MessageSquare className="h-4 w-4" />
+                Share your thoughts!
+            </button>
+
+            <SurveyDialog
+                adProductId={adProduct.id}
+                open={surveyOpen}
+                onOpenChange={setSurveyOpen}
+            />
         </>
     )
 }

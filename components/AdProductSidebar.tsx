@@ -1,6 +1,5 @@
 'use client'
 
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { ChevronLeft, Volume2 } from 'lucide-react'
 import {
@@ -24,16 +23,17 @@ interface AdProductWithFeatures {
 interface Props {
     adProducts: AdProductWithFeatures[]
     currentAdProductSlug: string
+    onShareThoughts?: () => void
 }
 
-export function AdProductSidebar({ adProducts, currentAdProductSlug }: Props) {
+export function AdProductSidebar({ adProducts, currentAdProductSlug, onShareThoughts }: Props) {
     const router = useRouter()
 
     // Find which ad product is current so we can expand it by default
     const activeAdProductId = adProducts.find((p) => p.slug === currentAdProductSlug)?.id
 
     return (
-        <nav className="hidden md:block w-52 flex-shrink-0 font-spotify">
+        <nav className="w-52 font-spotify">
             <TreeProvider
                 defaultExpandedIds={activeAdProductId ? [activeAdProductId] : []}
                 showIcons={false}
@@ -96,13 +96,13 @@ export function AdProductSidebar({ adProducts, currentAdProductSlug }: Props) {
                     ))}
                 </TreeView>
             </TreeProvider>
-            <Link
-                href="/"
-                className="flex items-center gap-1 text-xs text-white/80 hover:text-white transition-colors tracking-widest mt-4"
+            <button
+                onClick={onShareThoughts}
+                className="flex items-center gap-1 text-xs text-white/80 hover:text-white transition-colors tracking-widest mt-4 cursor-pointer"
             >
                 <ChevronLeft className="h-4 w-4" />
                 Share your thoughts!
-            </Link>
+            </button>
         </nav>
     )
 }

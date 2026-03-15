@@ -63,6 +63,20 @@ export function FeatureForm({ initialData, adProducts }: FeatureFormProps) {
         },
     })
 
+    // Initialize TipTap editor for caption (rich text)
+    const captionEditor = useEditor({
+        immediatelyRender: false,
+        extensions: [
+            StarterKit,
+            TiptapLink.configure({ openOnClick: false }),
+            TiptapImage,
+        ],
+        content: initialData?.caption || '',
+        onUpdate: ({ editor }) => {
+            setValue('caption', editor.getHTML())
+        },
+    })
+
     // Initialize TipTap editor for description (rich text)
     const editor = useEditor({
         immediatelyRender: false,
@@ -233,16 +247,63 @@ export function FeatureForm({ initialData, adProducts }: FeatureFormProps) {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                    <Label htmlFor="caption">Caption</Label>
-                    <Input id="caption" {...register('caption')} disabled={disabled} />
+            <div className="space-y-2">
+                <Label>Caption (Rich Text)</Label>
+                <div className="border rounded-md overflow-hidden">
+                    {captionEditor && (
+                        <div className="flex flex-wrap gap-1 p-2 border-b bg-gray-50">
+                            <Button
+                                type="button"
+                                variant={captionEditor.isActive('bold') ? 'default' : 'ghost'}
+                                size="sm"
+                                onClick={() => captionEditor.chain().focus().toggleBold().run()}
+                            >
+                                B
+                            </Button>
+                            <Button
+                                type="button"
+                                variant={captionEditor.isActive('italic') ? 'default' : 'ghost'}
+                                size="sm"
+                                onClick={() => captionEditor.chain().focus().toggleItalic().run()}
+                            >
+                                I
+                            </Button>
+                            <Button
+                                type="button"
+                                variant={captionEditor.isActive('bulletList') ? 'default' : 'ghost'}
+                                size="sm"
+                                onClick={() => captionEditor.chain().focus().toggleBulletList().run()}
+                            >
+                                List
+                            </Button>
+                            <Button
+                                type="button"
+                                variant={captionEditor.isActive('heading', { level: 2 }) ? 'default' : 'ghost'}
+                                size="sm"
+                                onClick={() => captionEditor.chain().focus().toggleHeading({ level: 2 }).run()}
+                            >
+                                H2
+                            </Button>
+                            <Button
+                                type="button"
+                                variant={captionEditor.isActive('heading', { level: 3 }) ? 'default' : 'ghost'}
+                                size="sm"
+                                onClick={() => captionEditor.chain().focus().toggleHeading({ level: 3 }).run()}
+                            >
+                                H3
+                            </Button>
+                        </div>
+                    )}
+                    <EditorContent
+                        editor={captionEditor}
+                        className="prose max-w-none p-4 min-h-[100px] [&_.tiptap]:outline-none"
+                    />
                 </div>
+            </div>
 
-                <div className="space-y-2">
-                    <Label htmlFor="orderNo">Order No</Label>
-                    <Input id="orderNo" type="number" {...register('orderNo', { valueAsNumber: true })} disabled={disabled} placeholder="0" />
-                </div>
+            <div className="space-y-2">
+                <Label htmlFor="orderNo">Order No</Label>
+                <Input id="orderNo" type="number" {...register('orderNo', { valueAsNumber: true })} disabled={disabled} placeholder="0" />
             </div>
 
             <div className="space-y-2">
