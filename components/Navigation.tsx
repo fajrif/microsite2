@@ -4,16 +4,13 @@ import Link from "next/link"
 import Image from "next/image"
 import { useState, useEffect } from "react"
 import { usePathname, useRouter } from "next/navigation"
-import { Menu, X, Volume2 } from "lucide-react"
+import { Menu, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import {
   TreeProvider,
   TreeView,
   TreeNode,
   TreeNodeTrigger,
-  TreeNodeContent,
-  TreeExpander,
-  TreeIcon,
   TreeLabel,
 } from "@/components/ui/tree"
 
@@ -34,7 +31,6 @@ export function Navigation() {
   const isAdProductDetail = pathname.startsWith('/ad-products/') && pathname !== '/ad-products'
   const currentAdProductSlug = isAdProductDetail ? pathname.split('/').pop() ?? '' : ''
 
-  const activeAdProductId = treeData.find((p) => p.slug === currentAdProductSlug)?.id
 
   useEffect(() => {
     const handleScroll = () => {
@@ -97,7 +93,7 @@ export function Navigation() {
           <div className="md:hidden pb-4 bg-black text-base text-white font-spotify shadow-lg rounded-b-lg px-4 pt-2 mb-4">
             {treeData.length > 0 && (
               <TreeProvider
-                defaultExpandedIds={activeAdProductId ? [activeAdProductId] : []}
+                defaultExpandedIds={[]}
                 showIcons={false}
                 showLines={false}
                 selectable={false}
@@ -128,35 +124,7 @@ export function Navigation() {
                         )}>
                           {adProduct.name}
                         </TreeLabel>
-                        {adProduct.features.length > 0 && (
-                          <TreeExpander hasChildren className="ml-auto" />
-                        )}
                       </TreeNodeTrigger>
-                      {adProduct.features.length > 0 && (
-                        <TreeNodeContent hasChildren>
-                          {adProduct.features.map((feature, fIdx) => (
-                            <TreeNode
-                              key={feature.id}
-                              nodeId={feature.id}
-                              level={1}
-                              isLast={fIdx === adProduct.features.length - 1}
-                            >
-                              <TreeNodeTrigger
-                                className="mt-1 rounded-xl px-2 py-1.5 mx-0 text-white/70 hover:text-white hover:bg-white/10"
-                              >
-                                <TreeExpander />
-                                <TreeIcon
-                                  icon={<Volume2 className="h-3.5 w-3.5" />}
-                                  className="text-white"
-                                />
-                                <TreeLabel className="text-sm text-white">
-                                  {feature.name}
-                                </TreeLabel>
-                              </TreeNodeTrigger>
-                            </TreeNode>
-                          ))}
-                        </TreeNodeContent>
-                      )}
                     </TreeNode>
                   ))}
                 </TreeView>

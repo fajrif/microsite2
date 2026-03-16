@@ -246,7 +246,7 @@ export const TreeNodeTrigger = ({
         handleSelection(nodeId, e.ctrlKey || e.metaKey);
         onClick?.(e);
       }}
-      style={{ paddingLeft: level * (indent ?? 0) + 8 }}
+      style={{ paddingLeft: level * (indent ?? 0) + 10 }}
       whileTap={{ scale: 0.98, transition: { duration: 0.1 } }}
       {...props}
     >

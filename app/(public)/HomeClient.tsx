@@ -50,7 +50,7 @@ export function HomeClient({ adProducts }: HomeClientProps) {
         if (isHovered || total === 0) return
         const interval = setInterval(() => {
             setRotationIndex(prev => prev + 1)
-        }, 3000)
+        }, 2500)
         return () => clearInterval(interval)
     }, [isHovered, total])
 

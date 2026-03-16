@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import Image from 'next/image'
 import { Play, Pause, SkipBack, SkipForward, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -40,7 +40,7 @@ interface AdProductShowClientProps {
     allAdProducts: AdProductWithFeatures[]
 }
 
-function FeaturePlayer({ feature }: { feature: Feature }) {
+function FeaturePlayer({ feature, activePlayerId, onPlay }: { feature: Feature; activePlayerId: string | null; onPlay: (id: string | null) => void }) {
     const [isPlaying, setIsPlaying] = useState(false)
     const [isBuffering, setIsBuffering] = useState(false)
     const [progress, setProgress] = useState(0)
@@ -50,6 +50,18 @@ function FeaturePlayer({ feature }: { feature: Feature }) {
     const hasVideo = !!feature.video_link
     const hasAudio = !hasVideo && !!feature.audio_link
 
+    // Stop this player if another player becomes active
+    useEffect(() => {
+        if (activePlayerId !== feature.id && isPlaying) {
+            const el = hasVideo ? videoRef.current : audioRef.current
+            if (el) {
+                el.pause()
+            }
+            setIsPlaying(false)
+            setIsBuffering(false)
+        }
+    }, [activePlayerId])
+
     const handleWaiting = () => setIsBuffering(true)
     const handleCanPlay = () => setIsBuffering(false)
 
@@ -57,14 +69,18 @@ function FeaturePlayer({ feature }: { feature: Feature }) {
         if (hasVideo && videoRef.current) {
             if (isPlaying) {
                 videoRef.current.pause()
+                onPlay(null)
             } else {
+                onPlay(feature.id)
                 videoRef.current.play()
             }
             setIsPlaying(!isPlaying)
         } else if (hasAudio && audioRef.current) {
             if (isPlaying) {
                 audioRef.current.pause()
+                onPlay(null)
             } else {
+                onPlay(feature.id)
                 audioRef.current.play()
             }
             setIsPlaying(!isPlaying)
@@ -82,10 +98,11 @@ function FeaturePlayer({ feature }: { feature: Feature }) {
         setIsPlaying(false)
         setIsBuffering(false)
         setProgress(0)
+        onPlay(null)
     }
 
     return (
-        <div className="w-[220px] h-[460px] shrink-0 rounded-2xl border-2 bg-black overflow-hidden flex flex-col" style={{ borderColor: 'hsl(var(--ptr-primary))' }}>
+        <div className="w-[220px] shrink-0 rounded-2xl border-2 bg-black overflow-hidden flex flex-col" style={{ aspectRatio: '1170/2532', borderColor: 'hsl(var(--ptr-primary))' }}>
             {hasVideo ? (
                 /* VIDEO: full-height with centered play overlay */
                 <div className="relative w-full h-full">
@@ -134,18 +151,15 @@ function FeaturePlayer({ feature }: { feature: Feature }) {
                     </button>
                 </div>
             ) : hasAudio ? (
-                /* AUDIO: image + bottom player controls */
                 <>
-                    <div className="flex-1 flex items-center justify-center overflow-hidden p-3 pt-4">
-                        <div className="relative w-full" style={{ aspectRatio: '4/5' }}>
-                            <Image
-                                src={feature.image}
-                                alt={feature.name}
-                                fill
-                                className="object-contain rounded-sm"
-                                unoptimized
-                            />
-                        </div>
+                    <div className="relative w-full h-full">
+                        <Image
+                            src={feature.image}
+                            alt={feature.name}
+                            fill
+                            className="absolute inset-0 object-cover z-[5]"
+                            unoptimized
+                        />
                     </div>
 
                     <audio
@@ -158,10 +172,10 @@ function FeaturePlayer({ feature }: { feature: Feature }) {
                         onCanPlay={handleCanPlay}
                     />
 
-                    <div className="shrink-0 px-4 pb-4 pt-3">
+                    <div className="absolute bottom-0 left-0 right-0 z-10 px-4 pb-4 pt-4 bg-gradient-to-t from-black/80 to-transparent">
                         {/* Progress bar */}
                         <div className={cn(
-                            "w-full h-[3px] bg-white/20 rounded-full mb-4",
+                            "w-full h-[3px] bg-white/30 rounded-full mb-4",
                             isBuffering && isPlaying && "animate-pulse"
                         )}>
                             <div
@@ -172,39 +186,37 @@ function FeaturePlayer({ feature }: { feature: Feature }) {
 
                         {/* Controls */}
                         <div className="flex items-center justify-center gap-6">
-                            <button className="text-white/40 hover:text-white transition-colors">
-                                <SkipBack className="h-4 w-4" />
+                            <button className="text-white/60 hover:text-white transition-colors drop-shadow-md">
+                                <SkipBack className="h-4 w-4 fill-current" />
                             </button>
                             <button
                                 onClick={togglePlay}
-                                className="w-10 h-10 rounded-full bg-white flex items-center justify-center hover:scale-105 transition-transform shadow-md"
+                                className="w-10 h-10 rounded-full bg-white flex items-center justify-center hover:scale-105 transition-transform shadow-lg"
                             >
                                 {isBuffering && isPlaying ? (
                                     <Loader2 className="h-4 w-4 text-black animate-spin" />
                                 ) : isPlaying ? (
-                                    <Pause className="h-4 w-4 text-black" />
+                                    <Pause className="h-4 w-4 text-black fill-current" />
                                 ) : (
-                                    <Play className="h-4 w-4 text-black ml-0.5" />
+                                    <Play className="h-4 w-4 text-black fill-current ml-0.5" />
                                 )}
                             </button>
-                            <button className="text-white/40 hover:text-white transition-colors">
-                                <SkipForward className="h-4 w-4" />
+                            <button className="text-white/60 hover:text-white transition-colors drop-shadow-md">
+                                <SkipForward className="h-4 w-4 fill-current" />
                             </button>
                         </div>
                     </div>
                 </>
             ) : (
                 /* IMAGE ONLY: no media controls */
-                <div className="flex-1 flex items-center justify-center overflow-hidden p-3 pt-4">
-                    <div className="relative w-full" style={{ aspectRatio: '4/5' }}>
-                        <Image
-                            src={feature.image}
-                            alt={feature.name}
-                            fill
-                            className="object-contain rounded-sm"
-                            unoptimized
-                        />
-                    </div>
+                <div className="relative w-full h-full">
+                    <Image
+                        src={feature.image}
+                        alt={feature.name}
+                        fill
+                        className="absolute inset-0 object-cover z-[5]"
+                        unoptimized
+                    />
                 </div>
             )}
         </div>
@@ -213,6 +225,7 @@ function FeaturePlayer({ feature }: { feature: Feature }) {
 
 export function AdProductShowClient({ adProduct, allAdProducts }: AdProductShowClientProps) {
     const [surveyOpen, setSurveyOpen] = useState(false)
+    const [activePlayerId, setActivePlayerId] = useState<string | null>(null)
 
     return (
         <>
@@ -269,7 +282,7 @@ export function AdProductShowClient({ adProduct, allAdProducts }: AdProductShowC
                                             )}>
                                                 {/* Player */}
                                                 <div className="shrink-0">
-                                                    <FeaturePlayer feature={feature} />
+                                                    <FeaturePlayer feature={feature} activePlayerId={activePlayerId} onPlay={setActivePlayerId} />
                                                 </div>
 
                                                 {/* Caption + Description */}
@@ -300,7 +313,7 @@ export function AdProductShowClient({ adProduct, allAdProducts }: AdProductShowC
             {/* Mobile floating button */}
             <button
                 onClick={() => setSurveyOpen(true)}
-                className="fixed bottom-6 right-6 md:hidden z-40 flex items-center gap-2 bg-[#1ED760] text-gray-900 px-4 py-3 rounded-full shadow-lg font-semibold text-sm hover:bg-[#1abc54] transition-colors"
+                className="fixed bottom-6 right-6 md:hidden z-40 flex items-center gap-2 bg-[#5FCDA9] text-primary px-4 py-3 rounded-full shadow-lg font-semibold text-sm transition-colors"
             >
                 <MessageSquare className="h-4 w-4" />
                 Share your thoughts!

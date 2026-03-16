@@ -67,7 +67,7 @@ export function SurveyDialog({ adProductId, open, onOpenChange }: SurveyDialogPr
         }}>
             <DialogContent
                 showCloseButton={!submitted}
-                className="bg-[#5FCDA9] border-none p-8 sm:p-10 max-w-xl sm:max-w-2xl"
+                className="bg-[#5FCDA9] border-none p-8 sm:p-10 w-[calc(100%-2rem)] sm:w-full max-w-xl sm:max-w-2xl rounded-2xl"
                 onInteractOutside={(e) => e.preventDefault()}
             >
                 <VisuallyHidden>
@@ -89,7 +89,8 @@ export function SurveyDialog({ adProductId, open, onOpenChange }: SurveyDialogPr
                                 您的想法对我们很重要
                             </h2>
                             <p className="text-sm sm:text-base text-primary">
-                                请问您在未来的营销计划中，考虑采用 Spotify 广告服务的意愿度是多少？（1为最低，10为最高）
+                                请问您在未来的营销计划中，考虑采用 Spotify 广告服务的意愿度是多少？<br/>
+                                （1为最低，10为最高）
                             </p>
                         </div>
 
@@ -139,7 +140,7 @@ export function SurveyDialog({ adProductId, open, onOpenChange }: SurveyDialogPr
                             <button
                                 onClick={handleSubmit}
                                 disabled={submitting}
-                                className="w-full max-w-sm py-4 px-8 bg-primary text-[hsl(var(--ptr-primary))] text-lg font-semibold rounded-full hover:bg-primary/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="w-full max-w-sm py-3 sm:py-4 px-8 bg-primary text-[hsl(var(--ptr-primary))] text-base sm:text-lg font-semibold rounded-full hover:bg-primary/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {submitting ? '正在提交...' : '提交'}
                             </button>
