@@ -7,6 +7,7 @@ import {
   FolderOpen,
   Briefcase,
   ClipboardList,
+  UserCheck,
   X,
 } from "lucide-react"
 import Link from "next/link"
@@ -25,6 +26,7 @@ export default function Sidebar() {
     { name: 'Ad Products', href: '/admin/ad-products', icon: FolderOpen },
     { name: 'Features', href: '/admin/features', icon: Briefcase },
     { name: 'Surveys', href: '/admin/surveys', icon: ClipboardList },
+    { name: 'Users', href: '/admin/users', icon: UserCheck },
   ]
 
   return (
