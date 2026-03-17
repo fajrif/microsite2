@@ -16,24 +16,11 @@ const notoSans = Noto_Sans({
 
 const spotifyMixWide = localFont({
     src: [
-        { path: './fonts/SpotifyMixWide/SpotifyMixWide-Thin.otf', weight: '100', style: 'normal' },
-        { path: './fonts/SpotifyMixWide/SpotifyMixWide-ThinItalic.otf', weight: '100', style: 'italic' },
-        { path: './fonts/SpotifyMixWide/SpotifyMixWide-Light.otf', weight: '300', style: 'normal' },
-        { path: './fonts/SpotifyMixWide/SpotifyMixWide-LightItalic.otf', weight: '300', style: 'italic' },
-        { path: './fonts/SpotifyMixWide/SpotifyMixWide-Regular.otf', weight: '400', style: 'normal' },
-        { path: './fonts/SpotifyMixWide/SpotifyMixWide-RegularItalic.otf', weight: '400', style: 'italic' },
-        { path: './fonts/SpotifyMixWide/SpotifyMixWide-Medium.otf', weight: '500', style: 'normal' },
-        { path: './fonts/SpotifyMixWide/SpotifyMixWide-MediumItalic.otf', weight: '500', style: 'italic' },
-        { path: './fonts/SpotifyMixWide/SpotifyMixWide-Bold.otf', weight: '700', style: 'normal' },
-        { path: './fonts/SpotifyMixWide/SpotifyMixWide-BoldItalic.otf', weight: '700', style: 'italic' },
-        { path: './fonts/SpotifyMixWide/SpotifyMixWide-Extrabold.otf', weight: '800', style: 'normal' },
-        { path: './fonts/SpotifyMixWide/SpotifyMixWide-ExtraboldItalic.otf', weight: '800', style: 'italic' },
-        { path: './fonts/SpotifyMixWide/SpotifyMixWide-Black.otf', weight: '900', style: 'normal' },
-        { path: './fonts/SpotifyMixWide/SpotifyMixWide-BlackItalic.otf', weight: '900', style: 'italic' },
-        { path: './fonts/SpotifyMixWide/SpotifyMixWide-Ultra.otf', weight: '950', style: 'normal' },
-        { path: './fonts/SpotifyMixWide/SpotifyMixWide-UltraItalic.otf', weight: '950', style: 'italic' },
+        { path: './fonts/SpotifyMixWide/SpotifyMixWide-Regular.woff', weight: '400', style: 'normal' },
+        { path: './fonts/SpotifyMixWide/SpotifyMixWide-Black.woff', weight: '900', style: 'normal' },
     ],
     variable: '--font-spotify-mix-wide',
+    display: 'swap',
 })
 
 export const metadata: Metadata = {
