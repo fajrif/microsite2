@@ -316,7 +316,7 @@ export function AdProductShowClient({ adProduct, allAdProducts }: AdProductShowC
                 className="fixed bottom-6 right-6 md:hidden z-40 flex items-center gap-2 bg-[#5FCDA9] text-primary px-4 py-3 rounded-full shadow-lg font-semibold text-sm transition-colors"
             >
                 <MessageSquare className="h-4 w-4" />
-                Share your thoughts!
+                分享您的想法
             </button>
 
             <SurveyDialog

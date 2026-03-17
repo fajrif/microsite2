@@ -70,7 +70,7 @@ export function AdProductSidebar({ adProducts, currentAdProductSlug, onShareThou
                 className="flex items-center gap-1 text-xs text-white/80 hover:text-white transition-colors tracking-widest mt-4 cursor-pointer"
             >
                 <ChevronLeft className="h-4 w-4" />
-                Share your thoughts!
+                分享您的想法
             </button>
         </nav>
     )
