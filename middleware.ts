@@ -2,11 +2,10 @@ import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 import { getToken } from 'next-auth/jwt'
 import { jwtVerify } from 'jose'
-
-const SITE_COOKIE = 'site-access-token'
+import { COOKIE_NAME } from '@/lib/site-auth'
 
 async function verifySiteCookie(request: NextRequest) {
-    const token = request.cookies.get(SITE_COOKIE)?.value
+    const token = request.cookies.get(COOKIE_NAME)?.value
     if (!token) return null
     try {
         const secret = new TextEncoder().encode(process.env.NEXTAUTH_SECRET)
